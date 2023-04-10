@@ -1,0 +1,119 @@
+#include <Wire.h>
+
+ 
+const byte rxPin = 16; //rx2
+const byte txPin = 17; //tx2
+HardwareSerial dwin(1);
+ 
+
+ 
+/* appliances pins */
+int light = 23;
+int fan = 22;
+int ac = 21;
+int tv = 19;
+ 
+
+unsigned char Buffer[8];
+
+ 
+void setup()
+{
+  Serial.begin(115200);
+  //Begin serial communication DWIN
+  dwin.begin(115200, SERIAL_8N1, rxPin, txPin);
+  unsigned status;
+
+  pinMode(light, OUTPUT);
+  pinMode(fan, OUTPUT);
+  pinMode(ac, OUTPUT);
+  pinMode(tv, OUTPUT);
+ 
+  digitalWrite(light, LOW);
+  digitalWrite(fan, LOW);
+  digitalWrite(ac, LOW);
+  digitalWrite(tv, LOW);
+}
+ 
+ 
+void loop()
+{
+   realy_control();
+  delay(50);
+}
+ 
+ 
+void realy_control()
+{
+  if (dwin.available())
+  {
+    for (int i = 0; i <= 8; i++) //this loop will store whole frame in buffer array.
+    {
+      Buffer[i] = dwin.read();
+    }
+ 
+    if (Buffer[0] == 0X5A)
+    {
+      switch (Buffer[4])
+      {
+        case 0x51:   //for light
+          if (Buffer[8] == 1)
+          {
+            digitalWrite(light, HIGH);
+            Serial.println("Relay1 ON");
+          }
+          else
+          {
+            digitalWrite(light, LOW);
+            Serial.println("Relay2 OFF");
+          }
+          break;
+ 
+        case 0x52:   //for fan
+          if (Buffer[8] == 1)
+          {
+            Serial.println(Buffer[8]);
+            digitalWrite(fan, HIGH);
+            Serial.println("Relay2 ON");
+          }
+          else
+          {
+            digitalWrite(fan, LOW);
+            Serial.println("Relay2 OFF");
+          }
+          break;
+ 
+        case 0x53:   //for AC
+          if (Buffer[8] == 1)
+          {
+            Serial.println(Buffer[8]);
+            digitalWrite(ac, HIGH);
+            Serial.println("Relay3 ON");
+          }
+          else
+          {
+            digitalWrite(ac, LOW);
+            Serial.println("Relay3 OFF");
+          }
+          break;
+ 
+        case 0x54:   //for TV
+          if (Buffer[8] == 1)
+          {
+            Serial.println(Buffer[8]);
+            digitalWrite(tv, HIGH);
+            Serial.println("Relay4 ON");
+          }
+          else
+          {
+            digitalWrite(tv, LOW);
+            Serial.println("Relay4 OFF");
+          }
+          break;
+ 
+        default:
+          Serial.println("No data..");
+      }
+    }
+  }
+}
